@@ -1,17 +1,21 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Generar nuevos GUIDs
-set "newMachineGuid=!random!!random!!random!!random!-!random!!random!!random!!random!-!random!!random!!random!!random!-!random!!random!!random!!random!-!random!!random!!random!!random!!random!!random!!random!!random!"
-set "newHwProfileGuid=!random!!random!!random!!random!-!random!!random!!random!!random!-!random!!random!!random!!random!-!random!!random!!random!!random!-!random!!random!!random!!random!!random!!random!!random!!random!"
+:: Generar nuevo HwProfileGuid en el formato {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}
+echo Generando nuevo HwProfileGuid...
+for /f %%a in ('powershell -command "[guid]::NewGuid().ToString()"') do set HwProfileGuid={%%a}
+echo Nuevo HwProfileGuid: %HwProfileGuid%
 
-:: Actualizar MachineGuid
-reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Cryptography" /v MachineGuid /d "{%newMachineGuid%}" /f
+:: Generar nuevo MachineGuid en el formato xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+echo Generando nuevo MachineGuid...
+for /f %%a in ('powershell -command "[guid]::NewGuid().ToString()"') do set MachineGuid=%%a
+echo Nuevo MachineGuid: %MachineGuid%
 
-:: Actualizar HwProfileGuid
-reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\IDConfigDB\Hardware Profiles\0001" /v HwProfileGuid /d "{%newHwProfileGuid%}" /f
-
-echo Nuevos GUIDs generados y actualizados:
-echo MachineGuid: %newMachineGuid%
-echo HwProfileGuid: %newHwProfileGuid%
-endlocal
+:: Mostrar comandos para actualizar los valores en el registro
+echo.
+echo Para actualizar estos valores en el registro, ejecuta los siguientes comandos como administrador:
+echo.
+echo reg add "HKLM\SYSTEM\CurrentControlSet\Control\IDConfigDB\Hardware Profiles\0001" /v HwProfileGuid /t REG_SZ /d "%HwProfileGuid%" /f
+echo reg add "HKLM\SOFTWARE\Microsoft\Cryptography" /v MachineGuid /t REG_SZ /d "%MachineGuid%" /f
+echo.
+pause
